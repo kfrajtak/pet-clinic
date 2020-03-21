@@ -60,6 +60,41 @@ The thing is that this docker image is being built by the Spotify Docker client 
  However, to optimize the build in a way that most stuff is taken from the cache (or cached file system layers), 
  I changed the position of arguments in a way that the Dockerize is downloaded just once when the first service is being built.
  Other steps are service dependent so they can't be optimized to share common steps with same arguments.
+ Another thing I did is replacing `ADD` by `RUN wget` - therefore the HTTP request for Dockerize will be executed just once.
+ As `ADD` first download the file and then creates hash of the layer.
+ `RUN` computes hash of the URL -> no file downloaded.  
+ 
+ All previously described optimizations result in:
+ ```bash
+Step 1/12 : FROM openjdk:8-jre-alpine
+
+ ---> f7a292bbb70c
+Step 2/12 : VOLUME /tmp
+
+ ---> Using cache
+ ---> 674131380226
+Step 3/12 : ARG DOCKERIZE_VERSION
+
+ ---> Using cache
+ ---> 4e71f5a79327
+Step 4/12 : RUN wget -O dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-alpine-linux-amd64-${DOCKERIZE_VERSION}.tar.gz
+
+ ---> Using cache
+ ---> f04603ca89a8
+Step 5/12 : RUN tar xzf dockerize.tar.gz
+
+ ---> Using cache
+ ---> b3b45f125cc1
+Step 6/12 : RUN chmod +x dockerize
+
+ ---> Using cache
+ ---> 06b6c870566e
+Step 7/12 : ARG ARTIFACT_NAME
+
+ ---> Using cache
+ ---> 834646a63ccb
+```
+First step which can not be cached is copy of the produced `jar`. 
  
  What could be also done is to create new Docker Image and use it as a base for the `docker/Dockerfile` 
  such as this base contain Dockerize.
@@ -67,8 +102,10 @@ The thing is that this docker image is being built by the Spotify Docker client 
  ```dockerfile
 FROM openjdk:8-jre-alpine
 
+# Download dockerize and cache that layer
 ARG DOCKERIZE_VERSION
-ADD https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-alpine-linux-amd64-${DOCKERIZE_VERSION}.tar.gz dockerize.tar.gz
+RUN wget -O dockerize.tar.gz https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-alpine-linux-amd64-${DOCKERIZE_VERSION}.tar.gz
+# Extract layer
 RUN tar xzf dockerize.tar.gz
 RUN chmod +x dockerize
 ``` 
@@ -76,17 +113,41 @@ And then the common Dockerfile:
 ```dockerfile
 FROM mybase
 
-VOLUME /tmp
-
 ARG ARTIFACT_NAME
 ADD ${ARTIFACT_NAME}.jar /app.jar
-RUN touch /app.jar
 
 ARG EXPOSED_PORT
 EXPOSE ${EXPOSED_PORT}
 
 ENV SPRING_PROFILES_ACTIVE docker
+
+VOLUME /tmp
 ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
 ```
 However, I don't that this is necessary as the base docker image is really simple and while building all images,
- thanks to the [aufs](https://en.wikipedia.org/wiki/Aufs), is heavy cached.
+ thanks to the [aufs](https://en.wikipedia.org/wiki/Aufs), is heavily cached.
+
+To the question asked:
+> so the image will be created only once
+
+This requires more collaboration - essentially yes,
+ that is possible by copying everything inside the Dockerfile and then building everything. 
+ Then you have one image... However, this is at least unwise. 
+ But is it somehow possible? That it will be build once but it will follow best practice?   
+ 
+The answer to that question are docker multistage builds.
+One can create base image that will be build exactly once.
+The idea is to copy all modules to this particular image, build them all by using 
+`mvn -Dmaven.test.skip=true install` - this will produce (with proper plugin set up) `fatJar`s of all projects.
+Now, each project have "run" image, which would just copy proper jar from the base like this:
+```dockerfile
+FROM my-base-all-builds AS base
+
+FROM openjdk:8-jre-alpine AS runtime
+# Obtain dockerize
+COPY --from=base /dockerize  /
+# Obtain correct JAR
+COPY --from=base /path/to/correct/service-jar/app.jar  /app.jar
+# Set correct entry point
+ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+```
