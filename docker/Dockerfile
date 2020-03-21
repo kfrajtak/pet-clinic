@@ -14,6 +14,6 @@ ADD ${ARTIFACT_NAME}.jar /app.jar
 ARG EXPOSED_PORT
 EXPOSE ${EXPOSED_PORT}
 
-ENV SPRING_PROFILES_ACTIVE docker
+ENV SPRING_PROFILES_ACTIVE mysql
 
 ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
