@@ -17,23 +17,21 @@ spring:
 
 To change the configuration one can either change the targeted Github repository - original value is
 [spring-petclinic-microservices-config](https://github.com/spring-petclinic/spring-petclinic-microservices-config).
-or to use provided fallback by creating simple folder `repo-with-configuration` in the root of the project with all necessary configuration 
+or to use provided fallback by creating simple folder `configuration` in the root of the project with all necessary configuration 
 and then edit `docker-compose.yml`
 ```yaml
   config-server:
     image: springcommunity/spring-petclinic-config-server
     container_name: config-server
-    mem_limit: 512M
-    ports:
-      - 8888:8888
-    environment:
-      - GIT_REPO=/config
     volumes:
-    - ./repo-with-configuration:/config
+      - ./configuration:/config
+    environment:
+      - GIT_REPO=config
 ```
 
 As there is already similar repository that contains configuration for the MySQL (which is used in the following steps),
-I decided just to target [that repository](https://github.com/tscrypter/spring-petclinic-microservices-config).
+I decided just to clone [that repository](https://github.com/tscrypter/spring-petclinic-microservices-config) 
+to [configuration](configuration) folder and then modify the yamls as I needed - for example adding export of metrics to elastic.
 
 >- the services must be started in proper order as stated in the readme file. However, docker-compose cannot guarantee the adequate start order 
 >    - can you figure out how this can be achieved? (0.5 pt)
@@ -84,6 +82,12 @@ running on [0.0.0.0](http://0.0.0.0:5601/app/kibana#/discover).
 ![](docs/kibana_screenshot.png)
 
 Fluentd config with Elastic is [here](docker/fluentd/conf) and custom Dockerfile [here](docker/fluentd/Dockerfile).
+The Kibana index for logs is `fluendt`.
+
+As for the metrics, they are exported to the elastic and then to the Kibana as described [here](https://micrometer.io/docs/registry/elastic)
+by using [this configuration](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-metrics-export-elastic).
+See [application.yml](configuration/application.yml). 
+Index for Kibana for metrics is `metrics`.
 
 > can you optimize the Dockerfile (docker/Dockerfile) so the image will be created only once? (2 points)
 
