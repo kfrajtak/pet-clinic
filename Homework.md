@@ -180,6 +180,5 @@ ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLim
 
 
 ## Original Repository
-Funny thing, original repository had opened [issue](https://github.com/spring-petclinic/spring-petclinic-microservices/issues/136) -  
-on fixing the dockerfile and to introduce caching of Dockerize - as I was able to do that in this homework, 
+Funny thing, original repository had opened [issue](https://github.com/spring-petclinic/spring-petclinic-microservices/issues/136) - on fixing the dockerfile and to introduce caching of Dockerize - as I was able to do that in this homework, 
 I created [pull request](https://github.com/spring-petclinic/spring-petclinic-microservices/pull/148) for that. 
