@@ -4,7 +4,33 @@
 >- the services are configured using the “Configuration as code” approach
 >    - figure out how, where is the configuration stored and find out how to modify it and try it (1 point)
 
-TODO
+This demo uses [Spring Cloud Config](https://cloud.spring.io/spring-cloud-config/reference/html/) -
+in [this file](spring-petclinic-config-server/src/main/resources/bootstrap.yml). 
+
+Then all services (i.e. `spring-petclinic-vets-service`) that use the configuration from this server must have specification where tho find such configuration
+```yaml
+spring:
+  cloud:
+    config:
+      uri: http://config-server:8888
+```
+
+To change the configuration one can either change the targeted Github repository - original value is
+[spring-petclinic-microservices-config](https://github.com/spring-petclinic/spring-petclinic-microservices-config).
+or to use provided fallback by creating simple folder `repo-with-configuration` in the root of the project with all necessary configuration 
+and then edit `docker-compose.yml`
+```yaml
+  config-server:
+    image: springcommunity/spring-petclinic-config-server
+    container_name: config-server
+    mem_limit: 512M
+    ports:
+      - 8888:8888
+    environment:
+      - GIT_REPO=/config
+    volumes:
+    - ./repo-with-configuration:/config
+```
 
 >- the services must be started in proper order as stated in the readme file. However, docker-compose cannot guarantee the adequate start order 
 >    - can you figure out how this can be achieved? (0.5 pt)
