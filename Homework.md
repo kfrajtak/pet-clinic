@@ -177,3 +177,9 @@ COPY --from=base /path/to/correct/service-jar/app.jar  /app.jar
 # Set correct entry point
 ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
 ```
+
+
+## Original Repository
+Funny thing, original repository had opened [issue](https://github.com/spring-petclinic/spring-petclinic-microservices/issues/136) -  
+on fixing the dockerfile and to introduce caching of Dockerize - as I was able to do that in this homework, 
+I created [pull request](https://github.com/spring-petclinic/spring-petclinic-microservices/pull/148) for that. 
