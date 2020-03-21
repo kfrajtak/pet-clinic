@@ -79,7 +79,11 @@ As there are resource files in the directory `mysql` and maven dependency on `my
 ## Extra tasks
 > collect the logs (1 point) (and eventually the metrics, 2 points) transparently and store them in ElasticSearch
 
-TODO
+Logs are collected from the docker stdout using Fluentd microservice, then pushed to the Elastic search and then visualized in the Kibana -
+running on [0.0.0.0](http://0.0.0.0:5601/app/kibana#/discover).
+![](docs/kibana_screenshot.png)
+
+Fluentd config with Elastic is [here](docker/fluentd/conf) and custom Dockerfile [here](docker/fluentd/Dockerfile).
 
 > can you optimize the Dockerfile (docker/Dockerfile) so the image will be created only once? (2 points)
 
