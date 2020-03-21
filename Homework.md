@@ -32,6 +32,9 @@ and then edit `docker-compose.yml`
     - ./repo-with-configuration:/config
 ```
 
+As there is already similar repository that contains configuration for the MySQL (which is used in the following steps),
+I decided just to target [that repository](https://github.com/tscrypter/spring-petclinic-microservices-config).
+
 >- the services must be started in proper order as stated in the readme file. However, docker-compose cannot guarantee the adequate start order 
 >    - can you figure out how this can be achieved? (0.5 pt)
 
