@@ -11,19 +11,19 @@ Konkrétní konfigurace je v samostatném repozitáři odkud si ji pulluje [conf
    - can you figure out how this can be achieved? 
    - how can I make one service wait for others to start? 
 
-docker-compose umožňuje definovat pořadí, v jakém bude služby spouštět (resp. vzájemné závislosti definovaných služeb) pomocí ["depends on"](https://docs.docker.com/compose/compose-file/#depends_on) - u tohoto projektu to už v `docker-compose.yml` je nastaveno. 
+docker-compose umožňuje definovat pořadí, v jakém bude služby spouštět (resp. vzájemné závislosti definovaných služeb) pomocí ["depends\_on"](https://docs.docker.com/compose/compose-file/#depends_on) - u tohoto projektu to už v `docker-compose.yml` je nastaveno. 
 
 Čekání na dokončení spuštění konkrétní služby se v tomto projektu řeší pomocí nástroje [dockerize](https://github.com/jwilder/dockerize), opět už je to nakonfigurované. Obecně je to asi trochu složitější problém, protože "jak poznám, že je služba spuštěná?" Dockerize toto řeší tak, že zkouší vytvořit TCP spojení s cílovou adresou, a ve chvíli, kdy se to povede, tak službu považuje za připravenou.
 
  - the services are using an in-memory database; the data will be lost when the “network” is stopped
    - change whatever must be changed to stored data for each service in a separate database 
 
-Upravil jsem `docker-compose.yml` a konfigurace jednotlivých služeb v [repozitáři s konfiguracemi](https://github.com/Silaedru/spring-petclinic-microservices-config). 
+Upravil jsem `docker-compose.yml` a konfigurace jednotlivých služeb v [repozitáři s konfiguracemi](https://github.com/Silaedru/spring-petclinic-microservices-config). Též bylo potřeba trochu upravit SQL skripty, které vytvářejí schéma DB a vzorová data.
 
 ## Extra tasks
  - collect the logs (1 point) (and eventually the metrics, 2 points) transparently and store them in ElasticSearch
 
-TODO
+Nemám.
 
  - can you optimize the Dockerfile (docker/Dockerfile) so the image will be created only once? (2 points)
 
