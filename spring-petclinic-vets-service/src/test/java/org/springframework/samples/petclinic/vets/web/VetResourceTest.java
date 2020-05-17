@@ -60,3 +60,5 @@ class VetResourceTest {
             .andExpect(jsonPath("$[0].id").value(1));
     }
 }
+
+// Jako domaci ulohu prijdejte do libovolneho projektu (PetStore, nektery z projektu ze cviceni, Vas semestralni projekt) bud contract test nebo test s mockem volane sluzby (5 bodu).
